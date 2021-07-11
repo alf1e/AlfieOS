@@ -7,16 +7,20 @@ using System.Drawing;
 using System.IO;
 using Cosmos.System.FileSystem.VFS;
 using Cosmos.System.FileSystem;
+using AlfieOS.terminal;
+using Alfie
 
 namespace AlfieOS
 {
     public class Kernel : Sys.Kernel
     {
+        public string acc;
+
         protected override void BeforeRun()
         {
+            acc = "Home";
             var fs = new Sys.FileSystem.CosmosVFS();
             Sys.FileSystem.VFS.VFSManager.RegisterVFS(fs);
-            var acc = "Home";
             Console.Clear();
             Console.WriteLine("");
         }
@@ -24,57 +28,23 @@ namespace AlfieOS
         protected override void Run()
         {
             string input = "";
+            Console.Write(acc + ": ");
             input = Console.ReadLine();
             if (input.StartsWith("sudo ")) {
                 input.Remove(0, 5);
-                Terminal(input.Remove(0, 5), true);
+                Ter.Terminal(input.Remove(0, 5), true);
                 }
-            else { Terminal(input, false); }
+            else { Ter.Terminal(input, false); }
             
         }
-        private void Terminal(string input, Boolean super)
+        public static void rExpection(int ecode)
         {
-            if (input == "help")
+            string emsg = "";
+            if (ecode == 503)
             {
-                Console.WriteLine("help -- Shows help infomation");
-                Console.WriteLine("restart -- Reboot the machine");
-                Console.WriteLine("shutdown -- Shutdown the machine");
-                Console.WriteLine("fs -- Perform a file system check");
+                emsg = "Action not permitted";
             }
-            else if (input == "restart")
-            {
-                Sys.Power.Reboot();
-            }
-            else if (input == "shutdown")
-            {
-                Sys.Power.Shutdown();
-            }
-            else if (input == "fs") {if (super == true)
-                {
-                    string[] filePaths = Directory.GetFiles(@"0:\");
-                    var drive = new DriveInfo("0");
-                    Console.WriteLine("Volume in drive 0 is " + $"{drive.VolumeLabel}");
-                    Console.WriteLine("Directory of " + @"0:\");
-                    Console.WriteLine("\n");
-                    for (int i = 0; i < filePaths.Length; ++i)
-                    {
-                        string path = filePaths[i];
-                        Console.WriteLine(System.IO.Path.GetFileName(path));
-                    }
-                    foreach (var d in System.IO.Directory.GetDirectories(@"0:\"))
-                    {
-                        var dir = new DirectoryInfo(d);
-                        var dirName = dir.Name;
-
-                        Console.WriteLine(dirName + " <DIR>");
-                    }
-                    Console.WriteLine("\n");
-                    Console.WriteLine("        " + $"{drive.TotalSize}" + " bytes");
-                    Console.WriteLine("        " + $"{drive.AvailableFreeSpace}" + " bytes free");
-                }
-                else if (super == false) {}
-            }
-            
+            Console.WriteLine("Error " + ecode + ": " + emsg);
         }
     }
 }
